@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lokasi saya · Member Merah IGR Pekanbaru</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f6f5f2;color:#1b1a17;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.c{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(0,0,0,.08);padding:26px 22px;max-width:380px;width:calc(100% - 32px);text-align:center}
+h1{font-size:20px;margin:6px 0 6px}p{color:#5f5d57;font-size:14.5px;line-height:1.45;margin:8px 0}
+.b{display:block;width:100%;border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:600;margin-top:12px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.pri{background:#c8102e;color:#fff}.sec{background:#eef0f4;color:#10233f}
+.ok{color:#1d7a3a;font-weight:600}.err{color:#a4441c}.mono{font-family:ui-monospace,monospace;font-size:13px;background:#f3f2ee;border-radius:8px;padding:8px;word-break:break-all}
+.dot{width:54px;height:54px;border-radius:50%;background:#c8102e;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+</style></head><body><div class="c">
+<div class="dot">📍</div>
+<h1>Lokasi saya</h1>
+<p id="msg">Mengambil lokasi GPS… izinkan akses lokasi bila browser bertanya.</p>
+<button class="b pri" id="go">Izinkan &amp; ambil lokasi</button>
+<div id="res"></div>
+</div>
+<script>
+// Hanya boleh kembali ke dashboard di claude.ai (bukan alamat lain)
+const DEF='https://claude.ai/artifact/X3vNiXCa6pqKFzwarrGDqD';
+let back=new URLSearchParams(location.search).get('back')||DEF;
+if(!/^https:\/\/claude\.ai\/artifact\/[A-Za-z0-9_-]+$/.test(back))back=DEF;
+const enc=x=>(x<0?'m':'')+Math.abs(x).toFixed(6).replace('.','p');
+const $=id=>document.getElementById(id);
+function ok(p){const la=p.coords.latitude,ln=p.coords.longitude,ac=Math.round(p.coords.accuracy||0);
+  const url=back+'#loc-'+enc(la)+'-'+enc(ln)+'-'+ac+'-t'+Math.floor(Date.now()/1000).toString(36);
+  $('msg').innerHTML='<span class="ok">✓ Lokasi didapat (± '+ac+' m). Kembali ke dashboard…</span>';
+  $('res').innerHTML='<a class="b pri" href="'+url+'">Kembali ke dashboard</a><div class="mono" style="margin-top:12px">'+la.toFixed(6)+', '+ln.toFixed(6)+'</div><a class="b sec" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+la+','+ln+'">Lihat di Google Maps</a>';
+  $('go').style.display='none';setTimeout(()=>location.replace(url),700)}
+function bad(e){const c=e&&e.code;$('msg').innerHTML='<span class="err">'+(c===1?'Izin lokasi ditolak. Buka pengaturan situs browser → izinkan Lokasi, lalu tekan tombol di bawah.':c===3?'GPS terlalu lama merespons. Pastikan GPS/Lokasi HP menyala lalu coba lagi.':'Lokasi tidak tersedia di perangkat ini.')+'</span>';$('go').textContent='Coba lagi'}
+function ask(){$('msg').textContent='Mengambil lokasi GPS…';if(!navigator.geolocation)return bad({code:2});
+  navigator.geolocation.getCurrentPosition(ok,bad,{enableHighAccuracy:true,timeout:20000,maximumAge:10000})}
+$('go').onclick=ask;ask();
+</script></body></html>

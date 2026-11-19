@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b1a30">
+<title>Mode Motor · Rute Kunjungan</title>
+<style>
+:root{--bg:#fff;--fg:#000;--mut:#333;--card:#eceae6;--line:#d6d3cc;--go:#0b57d0;--wa:#0b7a3e;--tel:#10233f;--red:#c8102e;--ok:#0a7d0a;--warn:#8a4b00;--note:#fff1c7}
+body.night{--bg:#0b1a30;--fg:#fff;--mut:#c3cfe0;--card:rgba(255,255,255,.12);--line:rgba(255,255,255,.18);--go:#1a73e8;--wa:#1f9d55;--tel:#3b4f6e;--ok:#0ca30c;--warn:#ffd27a;--note:rgba(250,178,25,.18)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,a{font:inherit;color:inherit}
+#app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;max-width:640px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}.top b{font-size:15px}.prog{font-weight:700;color:var(--mut);font-size:14px}
+.set{display:flex;gap:8px;padding:10px 16px 0}.set button{flex:1 1 0;min-height:46px;border-radius:12px;border:2px solid var(--fg);background:none;font-weight:700;font-size:13px;padding:4px 6px}
+.safe{margin:8px 16px 0;font-size:13px;font-weight:700;color:var(--warn)}
+.gps{margin:8px 16px 0;border-radius:12px;padding:10px 12px;font-size:14px;border:1px solid var(--line)}.gps.ok{background:#e7f6e7;color:#0b5d0b}.gps.bad{background:#fdf1ec;color:#8a2e0c}.gps.ask{background:#eef4fc;color:#1d5aa6}
+body.night .gps.ok{background:#12351a;color:#9be59b}body.night .gps.bad{background:#3a1d14;color:#ffb59a}body.night .gps.ask{background:#16294a;color:#a9c8ff}
+.gps .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.gps button{min-height:44px;border-radius:10px;border:2px solid currentColor;background:none;font-weight:700;padding:0 12px}
+.body{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+.num{width:58px;height:58px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:26px}
+h1{margin:0;font-size:32px;line-height:1.15;overflow-wrap:anywhere}.addr{margin:0;color:var(--mut);font-size:18px}
+.meta{display:flex;gap:8px;flex-wrap:wrap}.meta span{background:var(--card);border-radius:999px;padding:5px 12px;font-size:15px;font-weight:600}
+.note{background:var(--note);border-radius:12px;padding:10px 12px;font-size:16px}
+.big{display:flex;align-items:center;justify-content:center;gap:8px;min-height:76px;border-radius:16px;font-size:21px;font-weight:800;text-decoration:none;color:#fff;border:0;flex:1;text-align:center;padding:0 12px;cursor:pointer}
+.big.go{background:var(--go);min-height:96px;font-size:25px}.big.wa{background:var(--wa)}.big.tel{background:var(--tel)}.big.off{background:var(--card);color:var(--mut)}
+.row2{display:flex;gap:10px}
+.sub{font-weight:800;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:10px}.chip{flex:1 1 calc(50% - 5px);min-height:64px;border-radius:14px;border:2px solid var(--fg);background:none;font-weight:800;font-size:17px;cursor:pointer;padding:6px}.chip.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.nav{position:sticky;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
+.nav button{flex:1;min-height:76px;border-radius:16px;border:0;font-size:21px;font-weight:800;background:var(--card);cursor:pointer}.nav button.pri{background:var(--red);color:#fff}.nav button[disabled]{opacity:.35}
+.list{display:flex;flex-direction:column;gap:8px}.it{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:14px;padding:12px;background:none;text-align:left;cursor:pointer;min-height:64px}
+.it.cur{border-color:var(--red)}.it .n{width:34px;height:34px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:800;flex:none}.it.done .n{background:var(--ok);color:#fff}.it b{display:block;font-size:17px}.it small{color:var(--mut);font-size:14px}
+.send{background:var(--red);color:#fff}.ghost{background:var(--card);color:var(--fg)}
+.empty{padding:40px 20px;text-align:center}.empty h1{font-size:24px;margin-bottom:10px}
+.small h1{font-size:24px}.small .addr{font-size:16px}.small .big{min-height:60px;font-size:17px}.small .big.go{min-height:74px;font-size:20px}.small .chip{min-height:52px;font-size:15px}.small .nav button{min-height:60px;font-size:18px}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#1a1a19;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;z-index:9;max-width:90vw}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* Mode Motor di luar Claude: GPS diminta langsung oleh browser.
+   Rute datang dari dashboard lewat bagian # link (tidak dikirim ke server); hasil dikirim balik ke dashboard lewat link #moto-… */
+const STATUS=['Berhasil','Janji belanja / aktivasi','Sudah dikunjungi','Tidak berminat','Tutup / pindah'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function b64e(o){const u=new TextEncoder().encode(JSON.stringify(o));let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function b64d(t){const s=atob(t.replace(/-/g,'+').replace(/_/g,'/'));const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return JSON.parse(new TextDecoder().decode(u))}
+function distKm(a,b){const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lng-a.lng)*r;const x=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function toast(t,ms=3000){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),ms)}
+/* ---- rute dari link ---- */
+function readRoute(){const m=/^#r=([A-Za-z0-9_-]+)$/.exec(location.hash);if(!m)return null;try{const o=b64d(m[1]);if(!o||o.v!==1||!Array.isArray(o.s))return null;
+  const back=/^https:\/\/claude\.ai\/artifact\/[A-Za-z0-9-]+$/.test(o.b||'')?o.b:'';
+  const stops=o.s.filter(x=>Array.isArray(x)&&isFinite(+x[2])&&isFinite(+x[3])).slice(0,40).map(x=>({id:String(x[0]),name:String(x[1]||'Titik'),lat:+x[2],lng:+x[3],ph:String(x[4]||'').replace(/\D/g,''),tag:String(x[5]||''),addr:String(x[6]||''),note:String(x[7]||'')}));
+  return stops.length?{t:String(o.t||''),back,stops}:null}catch(e){return null}}
+const R=readRoute();const KEY='moto_'+(R?R.t:'');
+const st={i:0,res:{},...(R?store.get(KEY,{}):{})};if(R)st.i=Math.max(0,Math.min(R.stops.length-1,st.i||0));
+const pref={theme:'day',big:true,wake:true,...store.get('moto_pref',{})};
+const save=()=>{if(R)store.set(KEY,{i:st.i,res:st.res})},savePref=()=>store.set('moto_pref',pref);
+/* ---- GPS: izin langsung dari browser, semua kemungkinan gagal ditangani ---- */
+const G={state:'idle',acc:0,loc:null,err:''};let watchId=null,low=false;
+const GMSG={denied:'<b>Izin lokasi ditolak.</b> Ketuk ikon 🔒 / ⓘ di samping alamat → Izin / Setelan situs → Lokasi → <b>Izinkan</b>, lalu tekan Coba lagi.',unavailable:'<b>Lokasi tidak ditemukan.</b> Nyalakan GPS / Lokasi di HP, lalu coba di tempat terbuka.',timeout:'<b>GPS terlalu lama merespons.</b> Coba lagi di tempat terbuka.',unsupported:'<b>Browser ini tidak mendukung lokasi.</b> Pakai Chrome / Safari terbaru. Navigasi Google Maps tetap memakai GPS HP.',insecure:'<b>Halaman harus dibuka lewat https</b> agar lokasi bisa dipakai.'};
+function stopGps(){if(watchId!=null){try{navigator.geolocation.clearWatch(watchId)}catch(e){}}watchId=null}
+function startGps(){stopGps();if(window.isSecureContext===false){G.state='insecure';return render()}if(!('geolocation' in navigator)){G.state='unsupported';return render()}
+  G.state='asking';render();
+  const ok=p=>{const first=G.state!=='ok';G.state='ok';G.acc=p.coords.accuracy;G.loc={lat:p.coords.latitude,lng:p.coords.longitude};if(first)toast(`📍 GPS aktif (± ${Math.round(G.acc)} m)`);render()};
+  const fail=e=>{if(e&&e.code===3&&!low){low=true;stopGps();watch(false);return}stopGps();G.state=!e?'unavailable':e.code===1?'denied':e.code===3?'timeout':'unavailable';G.err=e&&e.message||'';render()};
+  const watch=hi=>{try{watchId=navigator.geolocation.watchPosition(ok,fail,{enableHighAccuracy:hi,maximumAge:10000,timeout:hi?15000:25000})}catch(e){fail(null)}};watch(true)}
+function gpsBox(){if(G.state==='ok')return`<div class="gps ok">● GPS aktif · akurasi ± ${Math.round(G.acc)} m</div>`;
+  if(G.state==='asking')return`<div class="gps ask">📡 Meminta izin lokasi… pilih <b>Izinkan / Allow</b>.</div>`;
+  if(G.state==='idle')return`<div class="gps ask">Izinkan lokasi agar jarak & urutan rute dihitung dari posisi Anda.<div class="row"><button data-a="gps">📍 Izinkan lokasi</button></div></div>`;
+  return`<div class="gps bad">${GMSG[G.state]||'Lokasi tidak tersedia.'}${['denied','unavailable','timeout'].includes(G.state)?'<div class="row"><button data-a="gps">↻ Coba lagi</button></div>':''}</div>`}
+/* ---- layar tetap menyala ---- */
+let wl=null,wlOk=null;async function wakeOn(){if(!pref.wake||wl)return;try{wl=await navigator.wakeLock.request('screen');wlOk=true;wl.addEventListener('release',()=>{wl=null})}catch(e){wlOk=false}render()}
+function wakeOff(){try{wl&&wl.release()}catch(e){}wl=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wakeOn()});
+/* ---- tampilan ---- */
+const nav=s=>`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}&travelmode=driving&dir_action=navigate`;
+const ph0=p=>p?'0'+p.replace(/^62/,''):'';
+function backUrl(){const r=Object.entries(st.res).filter(([id])=>R.stops.some(s=>s.id===id)).map(([id,v])=>[id,v.s,v.at]);
+  return R.back+'#moto-'+b64e({v:1,t:R.t,r,l:G.loc?[+G.loc.lat.toFixed(6),+G.loc.lng.toFixed(6),Math.round(G.acc)]:null})}
+let view='stop';
+function render(){document.body.className=(pref.theme==='night'?'night':'day')+(pref.big?'':' small');const app=$('#app');
+  if(!R){app.innerHTML=`<div class="empty"><h1>🏍 Mode Motor</h1><p>Buka halaman ini dari dashboard Member Merah: <b>Peta &amp; rute → 🏍 Mode Motor di browser</b>. Rute kunjungan akan terbawa otomatis.</p></div>`;return}
+  const S=R.stops,s=S[st.i],done=Object.keys(st.res).length;const prev=st.i>0?S[st.i-1]:null;const me=G.loc;
+  const dMe=me?distKm(me,s):null,dPrev=prev?distKm(prev,s):null;
+  const set=`<div class="set"><button data-a="theme">${pref.theme==='night'?'🌙 Malam':'☀ Siang'}</button><button data-a="big">${pref.big?'A+ Besar':'A Normal'}</button><button data-a="wake">${!pref.wake?'💡 Layar bisa mati':wlOk===false?'💡 Tidak didukung':'💡 Layar menyala'}</button></div><div class="safe">⚠ Berhenti dulu sebelum menyentuh layar.</div>`;
+  const top=`<div class="top"><button class="big ghost" style="min-height:48px;font-size:15px;flex:none;padding:0 14px" data-a="list">${view==='list'?'✕ Tutup daftar':'☰ Daftar'}</button><span class="prog">Titik ${st.i+1}/${S.length} · selesai ${done}</span></div>`;
+  if(view==='list'){const ord=S.map((x,i)=>({x,i,d:me?distKm(me,x):null}));
+    app.innerHTML=`${top}${gpsBox()}<div class="body"><div class="row2"><button class="big ghost" style="min-height:56px;font-size:16px" data-a="sortme" ${me?'':'disabled'}>📍 Urutkan dari posisi saya</button></div>
+     <div class="list">${ord.map(({x,i,d})=>`<button class="it ${i===st.i?'cur':''} ${st.res[x.id]?'done':''}" data-a="go" data-i="${i}"><span class="n">${st.res[x.id]?'✓':i+1}</span><span><b>${esc(x.name)}</b><small>${d!=null?d.toFixed(1)+' km dari saya · ':''}${esc(st.res[x.id]?st.res[x.id].s:x.tag)}</small></span></button>`).join('')}</div>
+     <button class="big send" data-a="send">✓ Kirim hasil ke dashboard (${done})</button><button class="big ghost" style="min-height:56px;font-size:16px" data-a="copy">Salin ringkasan hasil</button></div>`;return}
+  app.innerHTML=`${top}${set}${gpsBox()}<div class="body"><div class="num">${st.i+1}</div><h1>${esc(s.name)}</h1>${s.addr?`<p class="addr">${esc(s.addr)}</p>`:''}
+   <div class="meta">${dMe!=null?`<span>± ${dMe.toFixed(1)} km dari saya</span>`:dPrev!=null?`<span>± ${dPrev.toFixed(1)} km dari titik sebelumnya</span>`:''}${s.tag?`<span>${esc(s.tag)}</span>`:''}${st.res[s.id]?`<span>✓ ${esc(st.res[s.id].s)}</span>`:''}</div>
+   ${s.note?`<div class="note">Catatan: ${esc(s.note)}</div>`:''}
+   <a class="big go" href="${nav(s)}" target="_blank" rel="noopener">▶ NAVIGASI KE SINI</a>
+   <div class="row2">${s.ph?`<a class="big wa" href="https://wa.me/${s.ph}" target="_blank" rel="noopener">WhatsApp</a><a class="big tel" href="tel:+${s.ph}">☎ ${esc(ph0(s.ph))}</a>`:'<span class="big off">Tidak ada No HP</span>'}</div>
+   <div class="sub">Sudah sampai? Catat hasil:</div>
+   <div class="chips">${STATUS.map(x=>`<button class="chip ${st.res[s.id]&&st.res[s.id].s===x?'on':''}" data-a="st" data-k="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+   ${done?`<button class="big send" style="min-height:60px;font-size:18px" data-a="send">✓ Kirim ${done} hasil ke dashboard</button>`:''}</div>
+   <div class="nav"><button data-a="prev" ${st.i===0?'disabled':''}>‹ Sebelumnya</button><button class="pri" data-a="next">${st.i>=S.length-1?'Selesai ✓':'Berikutnya ›'}</button></div>`;
+}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b||!R&&!['gps'].includes(b.dataset.a))return;const a=b.dataset.a;
+  if(a==='gps')startGps();
+  else if(a==='theme'){pref.theme=pref.theme==='night'?'day':'night';savePref();render()}
+  else if(a==='big'){pref.big=!pref.big;savePref();render()}
+  else if(a==='wake'){pref.wake=!pref.wake;savePref();if(pref.wake)await wakeOn();else wakeOff();render()}
+  else if(a==='list'){view=view==='list'?'stop':'list';render();scrollTo(0,0)}
+  else if(a==='go'){st.i=+b.dataset.i;save();view='stop';render();scrollTo(0,0)}
+  else if(a==='prev'){st.i--;save();render();scrollTo(0,0)}
+  else if(a==='next'){if(st.i>=R.stops.length-1){view='list';render();toast('Rute selesai — kirim hasil ke dashboard')}else{st.i++;save();render()}scrollTo(0,0)}
+  else if(a==='st'){const s=R.stops[st.i];st.res[s.id]={s:b.dataset.k,at:new Date().toISOString()};save();toast('Tercatat: '+b.dataset.k);render()}
+  else if(a==='sortme'){if(!G.loc)return;const cur=R.stops[st.i].id;const pts=[...R.stops];const out=[];let c=G.loc;while(pts.length){let bi=0,bd=1e9;pts.forEach((p,i)=>{const d=distKm(c,p);if(d<bd){bd=d;bi=i}});c=pts.splice(bi,1)[0];out.push(c)}
+    R.stops=out.filter(x=>!st.res[x.id]).concat(out.filter(x=>st.res[x.id]));st.i=0;save();toast('Diurutkan dari posisi Anda (yang belum dikunjungi di atas)');render()}
+  else if(a==='send'){if(!R.back){toast('Alamat dashboard tidak ada di link');return}location.href=backUrl()}
+  else if(a==='copy'){const t='Hasil kunjungan '+new Date().toLocaleDateString('id-ID')+'\n'+R.stops.filter(x=>st.res[x.id]).map((x,i)=>`${i+1}. ${x.name} — ${st.res[x.id].s}`).join('\n');try{await navigator.clipboard.writeText(t);toast('Disalin')}catch(_){prompt('Salin teks ini:',t)}}});
+/* izin GPS: langsung bila sudah pernah diizinkan; bila belum, tunggu tombol (gestur) agar dialog muncul dengan jelas */
+(async()=>{render();if(!R)return;wakeOn();let s='prompt';try{s=(await navigator.permissions.query({name:'geolocation'})).state}catch(e){}if(s==='granted')startGps();else if(s==='denied'){G.state='denied';render()}})();
+window.addEventListener('hashchange',()=>location.reload());
+</script>
+</body>
+</html>

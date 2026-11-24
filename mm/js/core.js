@@ -141,7 +141,7 @@ function histOf(m){const b=m.i*D.P;return Array.from({length:D.P},(_,q)=>D.G[b+q
 const fuOf=id=>S.fu[id]||{};
 async function waitClaude(ms=10000){if(window.__STANDALONE)return false;const t0=Date.now();while(!(window.claude&&window.claude.use)){if(Date.now()-t0>ms)return false;await sleep(150)}return true}
 async function initCaps(){
-  if(!(await waitClaude(10000))){setDbChip(window.__STANDALONE?'warn':'bad',window.__STANDALONE?'Salinan web · catatan di perangkat ini':'Mode lokal');loadLocal();return}
+  if(!(await waitClaude(10000))){setDbChip(window.__STANDALONE?'warn':'bad',window.__STANDALONE?'Salinan web · catatan di perangkat ini':'Mode lokal');loadLocal();fuRemoteInit();return}
   try{S.dl=await claude.use('downloads')}catch(e){S.dl=null}
   try{S.user=await claude.use('user');if(S.user&&S.user.id)S.uid=await S.user.id()}catch(e){}
   /* pengunjung belum login: jangan sentuh database tim (memicu pop-up "masuk untuk melihat data"); data member tetap terbuka dari file terenkripsi */
@@ -161,6 +161,25 @@ async function initCaps(){
         S.raw[d.id]=JSON.parse(s);S.meta[d.id]=m;S.src[d.id]='db';changed=true}catch(e){console.warn(d.id,e)}}
     if(changed){applyOverlays();rerender()}},()=>{});
 }
+/* ===== Salinan web: PIC/status/catatan tersimpan bersama di Google Sheets pemilik (Google Apps Script, window.__FU_URL).
+   Token = SHA-256(kata sandi tim | salt) — hanya yang tahu kata sandi tim bisa membaca/menulis. ===== */
+const FU_REMOTE={url:null,token:null,since:0,pending:new Set(),busy:false};
+async function sha256hex(t){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function fuRemoteInit(){if(!window.__STANDALONE||!window.__FU_URL||FU_REMOTE.url)return;let pw=null;try{pw=localStorage.getItem('mm_pw')}catch(e){}if(!pw)return;
+  FU_REMOTE.url=window.__FU_URL;FU_REMOTE.token=await sha256hex(pw+'|'+(window.__SALT||''));
+  try{JSON.parse(localStorage.getItem('igr2_fu_pending')||'[]').forEach(i=>FU_REMOTE.pending.add(i))}catch(e){}
+  await fuPull();setInterval(fuPull,45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)fuPull()})}
+function fuSavePending(){try{localStorage.setItem('igr2_fu_pending',JSON.stringify([...FU_REMOTE.pending]))}catch(e){}}
+async function fuPull(){if(!FU_REMOTE.url||FU_REMOTE.busy)return;FU_REMOTE.busy=true;
+  try{for(const id of [...FU_REMOTE.pending])await fuSend(id);
+    const r=await fetch(FU_REMOTE.url+'?token='+FU_REMOTE.token+'&since='+FU_REMOTE.since,{cache:'no-store'});const j=await r.json();if(!j.ok)throw new Error(j.error||'gagal');
+    let ch=false;for(const [id,d] of Object.entries(j.data||{})){const cur=S.fu[id];if(d&&(!cur||(d.at||'')>(cur.at||''))&&!FU_REMOTE.pending.has(id)){S.fu[id]=d;ch=true}}
+    FU_REMOTE.since=j.now||FU_REMOTE.since;setDbChip(FU_REMOTE.pending.size?'warn':'ok',FU_REMOTE.pending.size?`Menunggu kirim ${FU_REMOTE.pending.size} isian`:'Tersinkron tim');
+    if(ch){try{localStorage.setItem('igr2_fu',JSON.stringify(S.fu))}catch(e){}rerenderSoft()}}
+  catch(e){setDbChip('bad','Belum tersinkron · cek internet')}finally{FU_REMOTE.busy=false}}
+async function fuSend(id){const r=await fetch(FU_REMOTE.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:FU_REMOTE.token,id,data:S.fu[id]||{}})});const j=await r.json();if(!j.ok)throw new Error(j.error||'gagal');FU_REMOTE.pending.delete(id);fuSavePending()}
+function fuPush(id){if(!FU_REMOTE.url)return;FU_REMOTE.pending.add(id);fuSavePending();setDbChip('warn','Menyimpan ke tim…');
+  fuSend(id).then(()=>setDbChip(FU_REMOTE.pending.size?'warn':'ok',FU_REMOTE.pending.size?`Menunggu kirim ${FU_REMOTE.pending.size} isian`:'Tersinkron tim')).catch(()=>setDbChip('bad','Belum terkirim · dicoba lagi otomatis'))}
 function loadLocal(){try{S.fu=JSON.parse(localStorage.getItem('igr2_fu')||'{}')}catch(e){}}
 function setDbChip(k,t){const c=$('#chipDb');if(c)c.innerHTML=`<span class="dot ${k}"></span>${esc(t)}`}
 const writeQ={};
@@ -168,7 +187,7 @@ function saveFU(id,patch,log){
   const cur={...(S.fu[id]||{})};const next={...cur,...patch,at:new Date().toISOString()};if(S.uid)next.by=S.uid;
   if(log){const h=Array.isArray(cur.log)?cur.log.slice(-19):[];h.push({t:next.at,s:log});next.log=h}
   Object.keys(next).forEach(k=>{if(next[k]===''||next[k]==null)delete next[k]});S.fu[id]=next;
-  if(!S.db){try{localStorage.setItem('igr2_fu',JSON.stringify(S.fu))}catch(e){}return Promise.resolve()}
+  if(!S.db){try{localStorage.setItem('igr2_fu',JSON.stringify(S.fu))}catch(e){}fuPush(id);return Promise.resolve()}
   const prev=writeQ[id]||Promise.resolve();writeQ[id]=prev.then(()=>S.db.doc('followup/'+id).set(S.fu[id])).catch(e=>toast('Gagal simpan: '+(e.code||e.message)));return writeQ[id];
 }
 async function saveDataset(name,payload,fileName){if(S.db&&S.user&&S.user.isOwner&&!S.user.isOwner()){throw new Error('hanya pemilik dashboard yang bisa mengupdate data')}

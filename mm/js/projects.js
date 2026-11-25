@@ -121,9 +121,31 @@ function rkmBrief(r){if(!r)return'';if(r.sum)return r.sum;
   if(t){t=t.split(/(?<=[.!?])\s|\s*\n/)[0];if(t.length>120)t=t.slice(0,117).replace(/\s+\S*$/,'')+'…';return t[0].toUpperCase()+t.slice(1)}
   return String(r.issues||'').split(',').map(x=>x.replace(/^\s*\d+\.\s*/,'').trim()).filter(Boolean).join(', ')}
 /* toko kecil di Project Klik: hanya kunjungan tim Klik + SPV Klik yang dihitung */
-function visitOf(e){const x=visitIdx();const c=U(e.code);const vis=e.klik?D.M.klikVis:null;
-  const pick=l=>{if(!l)return null;for(let i=l.length-1;i>=0;i--)if(!vis||vis.has(U(l[i].pic)))return l[i];return null};
-  if(c&&x.byCode[c])return pick(x.byCode[c]);if(!c)return pick(x.byName[ownKey(e.name)]);return null}
+/* Jenis RKM yang sesuai tiap project: kunjungan dengan jenis ini diutamakan; bila tidak ada, kunjungan jenis lain tetap dihitung */
+const RKM_PREF={LOY:/LOYALTY|REGULER/,SVY:/AKTIVASI/,MAP:/AKTIVASI/,LMS:/TIDUR/,SLP:/BELUM BELANJA|TIDUR/,KTR:/TURUN|BELUM BELANJA|REGULER/};
+function visitOf(e){const x=visitIdx();const c=U(e.code);const vis=e.klik?D.M.klikVis:null;const pref=RKM_PREF[e.src]||null;
+  const pick=l=>{if(!l)return null;let any=null;for(let i=l.length-1;i>=0;i--){const r=l[i];if(vis&&!vis.has(U(r.pic)))continue;if(!pref||pref.test(U(r.type)))return r;if(!any)any=r}return any};
+  if(c&&x.byCode[c])return pick(x.byCode[c]);
+  const nm=x.byName[ownKey(e.name)];
+  if(c)return nm?pick(nm.filter(r=>lev1(U(r.code),c))):null; // nomor member salah ketik 1 digit + nama pemilik sama
+  // toko tanpa nomor: kunjungan yang bernomor member sah hanya diakui bila nama lengkap (pemilik + toko) persis sama
+  const own=l=>l&&l.filter(r=>!okCode(U(r.code))||nmKey(r.name)===nmKey(e.name));
+  return pick(own(nm))||pick(own(fuzzyName(x,e.name)))}
+/* jarak edit ≤ 1 (salah ketik satu huruf/angka) */
+function lev1(a,b){if(a===b)return true;const la=a.length,lb=b.length;if(Math.abs(la-lb)>1)return false;let i=0,j=0,d=0;
+  while(i<la&&j<lb){if(a[i]===b[j]){i++;j++;continue}if(++d>1)return false;if(la>lb)i++;else if(lb>la)j++;else{i++;j++}}return d+(la-i)+(lb-j)<=1}
+/* toko tanpa nomor member: semua kata nama pemilik (≥2 kata) ada di nama RKM, boleh beda 1 huruf per kata panjang */
+const nameToks=s=>U(String(s||'').split('(')[0]).split(/[^A-Z0-9]+/).filter(t=>t.length>=2);
+function fuzzyName(x,name){const t=nameToks(name);if(t.length<2)return null;if(!x.toks){x.toks=Object.entries(x.byName).map(([k,l])=>[U(l[0].name).split(/[^A-Z0-9]+/).filter(Boolean),l])}
+  const eq=(a,b)=>a===b||(a.length>=5&&b.length>=5&&lev1(a,b));let best=null;
+  for(const [rt,l] of x.toks){if(!eq(t[0],rt[0]||''))continue;if(t.every(w=>rt.some(z=>eq(w,z)))){if(best)return null;best=l}}return best}
+/* Hapus dari project ACC survey hanya bila RKM AKTIVASI TERAKHIR toko itu tegas "tidak berminat" / menolak.
+   Kalimat ragu (sepertinya, mungkin, belum berminat, masih ragu) atau penolakan aplikasi Klik/online TIDAK dihitung. */
+const TOLAK_RE=/\b(tidak|tdk|gak|ga|nggak|enggak|ngga)\s*(ber)?minat\b|\bmenolak\b|\btidak\s+(mau|ingin)\s+(ambil|jadi|aktivasi|member|daftar|ke\s+(igr|indogrosir))|\btidak\s+tertarik\b|\bbatal\s+(jadi\s+)?(member|daftar)/i;
+const HEDGE_RE=/sepertinya|kayaknya|kelihatannya|mungkin|belum|masih|ragu|nanti|klik|online|aplikasi|apk/i;
+function fixTolak(r){if(!r||!/AKTIVASI/.test(U(r.type)))return false;
+  return String(r.notes||'').split(/[.!?\n;()]+/).some(t=>TOLAK_RE.test(t)&&!HEDGE_RE.test(t))}
+function lastAktivasi(e){const x=visitIdx();const c=U(e.code);const l=(c&&okCode(c)?x.byCode[c]:x.byName[ownKey(e.name)])||[];for(let i=l.length-1;i>=0;i--)if(/AKTIVASI/.test(U(l[i].type)))return l[i];return null}
 const picOf=e=>U(fuOf(e.id).pic||e.pic||(e.code&&lastRkm(e.code)?.pic)||'');
 const coordOf=e=>parseCoord(fuOf(e.id).coord)||e.coord||null;
 const phoneOf=e=>phone62(fuOf(e.id).phone)||e.phone||'';
@@ -132,7 +154,7 @@ function memEnt(m){return{id:m.id,src:'MEM',code:m.code,name:m.name,m,coord:m.co
 function entOf(id){if(!id)return null;if(D.M.byId&&D.M.byId[id])return D.M.byId[id];if(id.startsWith('M-')){const m=D.mem.find(x=>x.id===id);return m?memEnt(m):null}return null}
 
 function buildProjects(){
-  const raw=S.raw;D.M.loy=parseLoyalty(raw.loyalty);D.M.slp=parseSleepers(raw.sleepers);D.M.map=parseMapping(raw.mapping);D.M.svy=parseSurvey(raw.survey);D.M.lms=parseLms(raw.lms);if(D.mapExtra&&D.mapExtra.length){D.M.map.rows=[...D.M.map.rows,...D.mapExtra]}
+  const raw=S.raw;D.M.loy=parseLoyalty(raw.loyalty);D.M.slp=parseSleepers(raw.sleepers);D.M.map=parseMapping(raw.mapping);D.M.svy=parseSurvey(raw.survey);D.M.svyTolak=[];D.M.svy.rows.forEach(r=>{if(!r.pending)return;const v=lastAktivasi(r);if(fixTolak(v)){r.pending=false;r.tolakRkm=v;D.M.svyTolak.push(r)}});D.M.lms=parseLms(raw.lms);if(D.mapExtra&&D.mapExtra.length){D.M.map.rows=[...D.M.map.rows,...D.mapExtra]}
   D.M.lms.rows=D.M.lms.rows.filter(e=>!MYMAPS_OUT.lms.has(U(e.code)));D.M.svy.rows=D.M.svy.rows.filter(e=>!MYMAPS_OUT.svy.has(e.id));
   applyExcelPic();
   D.M.byId={};[...D.M.loy.members,...D.M.slp.rows,...D.M.map.rows,...D.M.svy.rows,...D.M.lms.rows].forEach(e=>{D.M.byId[e.id]=D.M.byId[e.id]||e});

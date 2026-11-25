@@ -20,12 +20,12 @@ async function syncSheet(kind){const v=await sheetValues(kind);if(!v)return null
   let n=0,where;
   if(kind==='map'){const p=parseMapping({sheets:{main:v}});n=p.rows.length;if(!n){toast('Kolom SURVEYOR / GET MEMBER tidak ditemukan di sheet');return 0}where=await saveOrLocal('mapping',{sheets:{main:v}},'Google Sheets · Form Responses 1 (Get Member)')}
   else{const h=v[0].map(U);const ix=re=>h.findIndex(x=>re.test(x));
-    const m={code:ix(/NOMOR MEMBER/),name:ix(/NAMA MEMBER/),date:ix(/TANGGAL RKM/),pic:ix(/ADVISOR/),type:ix(/JENIS RKM/),issues:ix(/HASIL RKM|KENDALA/),notes:ix(/KETERANGAN/)};if(m.date<0)m.date=ix(/TIMESTAMP/);
+    const m={code:ix(/NOMOR MEMBER/),name:ix(/NAMA MEMBER/),date:ix(/TANGGAL RKM/),pic:ix(/ADVISOR/),type:ix(/JENIS RKM/),issues:ix(/HASIL RKM|KENDALA/),notes:ix(/KETERANGAN|DETAIL TEMPAT/)};if(m.date<0)m.date=ix(/TIMESTAMP/);
     if(m.code<0||m.pic<0){toast('Kolom Nomor Member / Advisor tidak ditemukan');return 0}
     Object.keys(m).forEach(k=>{if(m[k]<0)delete m[k]});
     const isOwner=!(S.db&&S.user&&S.user.isOwner&&!S.user.isOwner());
     if(isOwner){n=await processImport({a:v,hi:0,m,type:'rkm',fname:'Google Sheets · Form Responses 1 (RKM)'});where=S.db?'db':'lokal'}
-    else{const rows=v.slice(1).filter(r=>r&&r[m.code]).map(r=>[String(r[m.code]),String(r[m.name]??''),iso(toDate(r[m.date])),U(r[m.pic]),String(r[m.type]??''),String(r[m.issues]??''),String(r[m.notes]??'')]).filter(r=>r[2]);n=rows.length;where=await saveOrLocal('rkmx',{rows},'Google Sheets (RKM)')}}
+    else{const nt=rkmNotesFn(v[0],m);const rows=v.slice(1).filter(r=>r&&r[m.code]).map(r=>[String(r[m.code]),String(r[m.name]??''),iso(toDate(r[m.date])),U(r[m.pic]),String(r[m.type]??''),String(r[m.issues]??''),nt(r)]).filter(r=>r[2]);n=rows.length;where=await saveOrLocal('rkmx',{rows},'Google Sheets (RKM)')}}
   S.sync[kind]={at:new Date().toISOString(),n,where};toast(`✓ ${SHEETS[kind].l}: ${fmtN(n)} baris dari Google Sheets${where==='lokal'?' (hanya di layar ini)':''}`);
   if(S.view==='update'||S.view==='form')rerender();return n}
 async function driveCheck(){const mcp=await getMcp('Google Drive');if(!mcp){toast('Google Drive tidak tersedia di tampilan ini.',4000);return}

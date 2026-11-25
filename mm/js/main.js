@@ -240,7 +240,7 @@ function applyOverlays(){restoreBase();
   if(S.raw.master&&S.raw.master.rows)S.raw.master.rows.forEach(r=>{let m=D.byCode[U(r[0])];if(!m)m=addMember({code:r[0],name:r[1],sub:r[2]});m._orig=m._orig||{name:m.name,sub:m.sub,tier:m.tier,cat:m.cat,addr:m.addr,vil:m.vil,dist:m.dist,city:m.city,phone:m.phone,phoneRaw:m.phoneRaw,lat:m.lat,lng:m.lng,coord:m.coord,seg:m.seg,master:m.master};
     const set=(k,v)=>{if(v!=null&&v!=='')m[k]=v};set('name',r[1]);set('sub',r[2]);set('tier',r[3]);set('cat',r[4]);set('addr',r[5]);set('vil',U(r[6]));set('dist',U(r[7]));set('city',U(r[8]));if(r[9]){m.phoneRaw=r[9];m.phone=phone62(r[9])||m.phone}if(r[10]!=null&&r[11]!=null){m.lat=+r[10];m.lng=+r[11];m.coord={lat:m.lat,lng:m.lng}}m.seg=segFromSub(m.sub)||m.seg;m.master=1});
   Object.keys(S.raw).filter(k=>k.startsWith('prod-')).forEach(k=>{const h=S.raw[k];if(h&&h.p)D.prod[h.p]=h.rows});
-  if(S.raw.rkmx&&S.raw.rkmx.rows){const seen=new Set((D.rkmBase0||[]).map(r=>[U(r.code),r.date,U(r.pic)].join('|')));D.rkmBase=[...(D.rkmBase0||[]),...S.raw.rkmx.rows.filter(r=>!seen.has([U(r[0]),r[2],U(r[3])].join('|'))&&!/^TES(T|TING)?$/i.test(String(r[1]||'').trim())).map(r=>({code:r[0],name:r[1],date:r[2],pic:r[3],type:r[4],issues:r[5],notes:r[6]}))];rebuildFromForms()}
+  if(S.raw.rkmx&&S.raw.rkmx.rows){const seen=new Set((D.rkmBase0||[]).map(r=>rkmKey([r.code,r.name,r.date,r.pic])));D.rkmBase=[...(D.rkmBase0||[]),...S.raw.rkmx.rows.filter(r=>!seen.has(rkmKey(r))&&!/^TES(T|TING)?$/i.test(String(r[1]||'').trim())).map(r=>({code:r[0],name:r[1],date:r[2],pic:r[3],type:r[4],issues:r[5],notes:r[6]}))];rebuildFromForms()}
   if(CALC){if(S.per>=D.P)S.per=D.P-1;compute();buildProjects()}}
 
 /* ===== boot ===== */

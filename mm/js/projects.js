@@ -169,7 +169,7 @@ function buildProjects(){
 /* ===== Project Klik · toko kecil: semua sumber (hasil mapping, ACC survey toko kecil, RKM apa pun yang menyebut toko sepi / modal kurang / belanja sedikit).
    Dikunjungi tim Klik (grup "Klik only" di Excel pembagian advisor) + Ahmad (SPV Klik). */
 const KLIK_SPV='AHMAD';
-const smallSig=r=>/(^|,\s*)(8\.\s*Toko Sepi|11\.\s*Modal Kurang)/i.test(r.issues||'')||/sedikit|toko kecil|kedai kecil|modal|sepi/i.test(r.notes||'');
+const smallSig=r=>/(^|,\s*)(8\.\s*Toko Sepi|11\.\s*Modal Kurang)/i.test(r.issues||'')||/sedikit|toko kecil|kedai kecil|modal|sepi|\b(toko|kedai|warung|kios|usaha)\b[^.,;]{0,25}\bkecil\b|belanja\w*\s*(pun\s*)?(tidak|gak|nggak)\s*(terlalu\s*)?banyak/i.test(r.notes||'');
 function klikPic(e){if(!PICX||!PICX.grp.KLIK)return'';const code=e.code?U(e.code):'';if(code&&PICX.by[code]!=null&&PICX.a[PICX.by[code]].g==='KLIK')return PICX.a[PICX.by[code]].k;
   const c=coordOf(e);if(c){const ai=nearAdv(PICX.grp.KLIK,c);if(ai>=0)return PICX.a[ai].k}return''}
 /* ===== Project Klik · member Klik yang belanjanya turun September → Oktober (file "member klik turun belanja okt dari sept") ===== */
@@ -188,7 +188,9 @@ function buildKecil(){D.M.klikVis=new Set([...(PICX?PICX.a.filter(a=>a.g==='KLIK
   const add=(e,src,why,ts)=>{let w=out.get(e.id);if(!w){w=Object.assign({},e,{klik:1,cat:'KLIK',kecilSrc:[],alasan:why||e.alasan||'',ts:ts||e.ts||null});w.pic=klikPic(w)||e.pic||'';w.picHow='tim Klik';out.set(e.id,w)}if(!w.kecilSrc.includes(src))w.kecilSrc.push(src);return w};
   D.M.map.rows.filter(r=>r.cat==='KLIK').forEach(e=>add(e,'Mapping',e.alasan,e.ts));
   D.M.svy.rows.filter(e=>e.pending&&e.size==='KECIL').forEach(e=>add(e,'ACC survey',e.note,e.daftar));
-  const svyBy={};D.M.svy.rows.filter(e=>e.pending).forEach(e=>{svyBy[ownKey(e.name)]=e});const last={};
+  // ACC survey yang dihapus karena tidak berminat tapi alasannya toko/kedai kecil → tetap digarap tim Klik
+  (D.M.svyTolak||[]).forEach(e=>{if(smallSig(e.tolakRkm))add(e,'ACC survey · tidak berminat (toko kecil)',rkmBrief(e.tolakRkm),toDate(e.tolakRkm.date))});
+  const svyBy={};D.M.svy.rows.filter(e=>e.pending||e.tolakRkm).forEach(e=>{svyBy[ownKey(e.name)]=e});const last={};
   D.rkm.forEach(r=>{if(!smallSig(r)||/^TES(T|TING)?$/i.test(String(r.name||'').trim()))return;const c=U(r.code);last[okCode(c)?'c:'+c:'n:'+ownKey(r.name)]=r});
   for(const [k,r] of Object.entries(last)){let e=null;if(k[0]==='c'){const m=D.byCode[k.slice(2)];if(m)e=D.M.byId[m.id]||memEnt(m)}else e=svyBy[k.slice(2)]||null;
     if(e)add(e,'RKM '+title(String(r.type||'').toLowerCase()),rkmBrief(r),toDate(r.date))}

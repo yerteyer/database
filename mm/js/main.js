@@ -80,6 +80,7 @@ document.addEventListener('click',async e=>{const el=e.target.closest('[data-act
   case'pzst':{const f=F('project');f.zst=f.zst===k?'':k;f.page=0;rerender();break}
   case'zb-queue':zbQueue();break;
   case'zb-evt':if(isOwner())zbEvtModal();break;
+  case'svk-foto':svkView(k);break;
   case'pfu':{const f=F('project');f.st=f.st===k?'':k;f.page=0;rerender();break}
   case'wa-tpl':{const P=F('project').p||'loy';waTplModal(WA_GROUP[P]);break}
   case'copy':try{await navigator.clipboard.writeText(k.replace(/^62/,'0'));toast('Nomor disalin')}catch(_){toast(k)}break;

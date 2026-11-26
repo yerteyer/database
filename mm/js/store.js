@@ -40,7 +40,7 @@ async function autoPublish(){const names=Object.keys(S.raw).filter(k=>['db','ter
     await art.publish({'data/x/updates.txt':{content:await encText({v:1,at:new Date().toISOString(),ds}),contentType:'text/plain'}});S.pubAt=new Date().toISOString();return true}
   catch(e){console.warn('terbit otomatis',e&&(e.code||e.message));return false}}
 async function getEnc(name){if(!hostAllowed(location.hostname))throw new Error('alamat bukan dashboard asli');if(!(window.crypto&&crypto.subtle)){const e=new Error('butuh https');e.code='insecure';throw e}
-  const r=await fetch('data/x/'+bKey(name)+'.txt');if(!r.ok)throw new Error(name+' '+r.status);const bs=atob((await r.text()).trim());const buf=new Uint8Array(bs.length);for(let i=0;i<bs.length;i++)buf[i]=bs.charCodeAt(i);
+  const r=await fetch('data/x/'+bKey(name)+'.txt',window.__STANDALONE?{cache:'no-cache'}:undefined);if(!r.ok)throw new Error(name+' '+r.status);const bs=atob((await r.text()).trim());const buf=new Uint8Array(bs.length);for(let i=0;i<bs.length;i++)buf[i]=bs.charCodeAt(i);
   const z=await crypto.subtle.decrypt({name:'AES-GCM',iv:buf.slice(0,12)},await encKey(),buf.slice(12));
   const txt=await new Response(new Blob([z]).stream().pipeThrough(new DecompressionStream('gzip'))).text();return JSON.parse(txt)}
 // ambil data: db (bila migrasi lengkap) → file artifact → tunggu db lebih lama (browser baru lebih lambat terhubung)

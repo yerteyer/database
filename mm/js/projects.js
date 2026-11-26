@@ -122,7 +122,7 @@ function rkmBrief(r){if(!r)return'';if(r.sum)return r.sum;
   return String(r.issues||'').split(',').map(x=>x.replace(/^\s*\d+\.\s*/,'').trim()).filter(Boolean).join(', ')}
 /* toko kecil di Project Klik: hanya kunjungan tim Klik + SPV Klik yang dihitung */
 /* Jenis RKM yang sesuai tiap project: kunjungan dengan jenis ini diutamakan; bila tidak ada, kunjungan jenis lain tetap dihitung */
-const RKM_PREF={LOY:/LOYALTY|REGULER/,SVY:/AKTIVASI/,MAP:/AKTIVASI/,LMS:/TIDUR/,SLP:/BELUM BELANJA|TIDUR/,KTR:/TURUN|BELUM BELANJA|REGULER/};
+const RKM_PREF={SVK:/AKTIVASI/,LOY:/LOYALTY|REGULER/,SVY:/AKTIVASI/,MAP:/AKTIVASI/,LMS:/TIDUR/,SLP:/BELUM BELANJA|TIDUR/,KTR:/TURUN|BELUM BELANJA|REGULER/};
 function visitOf(e){const x=visitIdx();const c=U(e.code);const vis=e.klik?D.M.klikVis:null;const pref=RKM_PREF[e.src]||null;
   const pick=l=>{if(!l)return null;let any=null;for(let i=l.length-1;i>=0;i--){const r=l[i];if(vis&&!vis.has(U(r.pic)))continue;if(!pref||pref.test(U(r.type)))return r;if(!any)any=r}return any};
   if(c&&x.byCode[c])return pick(x.byCode[c]);
@@ -162,6 +162,7 @@ function buildProjects(){
   D.M.loy.members.forEach(e=>tag(e.id,'Loyalty Targetan'));D.M.slp.rows.forEach(e=>tag(e.id,'Klik · sleeper'));D.M.map.rows.forEach(e=>tag(e.id,e.cat==='KLIK'?'Klik · mapping kecil':'Mapping'));D.M.svy.rows.filter(e=>e.pending).forEach(e=>tag(e.id,'ACC belum aktivasi'));D.M.lms.rows.forEach(e=>tag(e.id,'Loyalty MM Sleepers'));
   D.M.zb=parseZumba(raw.zumba);D.M.zb.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Undangan Zumba')});
   D.M.ktr=parseKlikTurun(raw.klikturun);D.M.ktr.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Klik · turun Sep→Okt')});
+  D.M.svk=parseSvk(raw.svklik);svkLink(D.M.svk.rows);D.M.svk.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Survey apps Klik')});
   D.M.kecil=buildKecil();D.M.kecil.forEach(e=>tag(e.id,'Klik · toko kecil'));
   const pics=new Set();D.rkm.forEach(r=>r.pic&&pics.add(U(r.pic)));Object.values(D.M.byId).forEach(e=>e.pic&&pics.add(e.pic));Object.values(S.fu).forEach(f=>f&&f.pic&&pics.add(U(f.pic)));D.M.pics=[...pics].filter(Boolean).sort();
 }
@@ -199,6 +200,7 @@ const PROJ={
   klik:{n:'Project 4',t:'Project Klik',d:'Belum belanja sejak 1 Okt · belanja turun Sep→Okt · semua toko kecil',seg:false},
   lms:{n:'Project 5',t:'Loyalty MM Sleepers',d:'Promo 3–31 Nov · belanja ≥ Rp1 jt = 10.000 poin',seg:true},
   zb:{n:'Project 6',t:'Undangan Zumba × Salonpas',d:'Minggu 29 Nov 2026 · belanja Salonpas ≥ Rp50 rb · admin',seg:false},
+  svk:{n:'Project 8',t:'Survey dari Apps Klik',d:'Toko hasil survey aplikasi Klik · foto toko · PIC = surveyor',seg:true},
 };
-function projRows(p,o={}){if(p==='loy')return D.M.loy.members;if(p==='map')return D.M.map.rows.filter(r=>r.wil);if(p==='svy')return D.M.svy.rows.filter(r=>r.pending);if(p==='lms')return D.M.lms.rows;if(p==='zb')return(D.M.zb&&D.M.zb.rows)||[];
+function projRows(p,o={}){if(p==='loy')return D.M.loy.members;if(p==='map')return D.M.map.rows.filter(r=>r.wil);if(p==='svy')return D.M.svy.rows.filter(r=>r.pending);if(p==='lms')return D.M.lms.rows;if(p==='zb')return(D.M.zb&&D.M.zb.rows)||[];if(p==='svk')return(D.M.svk&&D.M.svk.rows)||[];
   if(p==='klik'){const s=o.sub||'slp';return s==='slp'?D.M.slp.rows:s==='turun'?((D.M.ktr&&D.M.ktr.rows)||[]):(D.M.kecil||[])}return[]}

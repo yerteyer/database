@@ -132,6 +132,7 @@ function mergeSurvey(old,nw){const A=old&&old.sheets&&old.sheets.main,B=nw&&nw.s
   const keep=A.slice(ha+1).filter(r=>!isRow(r,ia)||!keys.has(key(r,ia)));return{sheets:{main:[...A.slice(0,ha+1),...keep,...nb]}}}
 function stripNik(aoa){const hi=findHdrRow(aoa,[/NIK/],10);if(hi<0)return aoa;const cols=aoa[hi].map((v,i)=>/NIK|KTP/.test(U(v))?i:-1).filter(i=>i>=0);return aoa.map(r=>r?r.map((v,i)=>cols.includes(i)?null:v):r)}
 function detect(wb,fname){const N=wb.SheetNames;if(/ZUMBA|SALONPAS/i.test(fname))return{type:'zumba',payload:{sheets:{main:aoaOf(wb.Sheets[N[0]])}}};
+  {const a=aoaOf(wb.Sheets[N[0]]);const hi=findHdrRow(a,[/NO\.? ?SURVEY/,/SURVEYOR/]);if(hi>=0||/SURVEY.*KLIK|KLIK.*SURVEY/i.test(fname)&&findHdrRow(a,[/SURVEYOR/,/NAMA TOKO|NAMA PEMILIK/])>=0){const h=a[Math.max(0,hi)]||[];const keep=h.map((v,i)=>SVK_DROP.test(U(v))?-1:i).filter(i=>i>=0);return{type:'svklik',payload:{sheets:{main:a.map(r=>keep.map(i=>{const v=(r||[])[i];return /^\s*\d{12,}\s*$/.test(String(v??''))&&!/TELEPON|HP|WA/.test(U(h[i]))?null:v??null}))}}}}}
   {const a=aoaOf(wb.Sheets[N[0]]);const t=a.slice(0,8).map(r=>(r||[]).map(U).join('|')).join('||');if(/SLS SEPT|SALES SEPT/.test(t)&&/SLS OKT|SALES OKT/.test(t)&&(/KLIK|TURUN/i.test(fname)||/SELISIH/.test(t)))return{type:'klikturun',payload:{sheets:{main:a}}}}const pm=parsePicWorkbook(wb);if(pm)return{type:'picmap',payload:pm};const sh=n=>aoaOf(wb.Sheets[n]);const sa=N.find(n=>/SALES ALL/i.test(n));
   if(sa){const rk=N.find(n=>/SALES ROKOK/i.test(n))||N.find(n=>/ROKOK/i.test(n)&&!/NON/i.test(n));return{type:'loyalty',payload:{sheets:{LIST:sh(N.find(n=>/LIST/i.test(n))||N[0]),SALES_ALL:sh(sa),SALES_ROKOK:rk?sh(rk):[]}}}}
   let sleepCand=null;for(const n of N){const a=sh(n);const t=a.slice(0,12).map(r=>(r||[]).map(U).join('|')).join('||');
@@ -200,7 +201,7 @@ async function handleFiles(files){const sync=()=>{const b=$('#upStatus');if(b)b.
       if(d.type==='prod'){const h=parseProdAoa(d.aoa,f.name);if(!h.p){set(`${f.name}: bulan tidak terbaca dari nama file.`,'alert red');continue}if(!h.hasMem){set(`${f.name}: kolom jumlah MEMBER tidak ditemukan.`,'alert red');continue}
         set(`${f.name}: produk ${h.p}, ${h.rows.length} item. Menyimpan…`);await saveDataset('prod-'+h.p,h,f.name);set(`✓ ${f.name}: produk ${periodLabelKey(h.p)} diperbarui (${h.rows.length} item).`);continue}
       if(d.type==='survey'&&S.raw.survey)d.payload=mergeSurvey(S.raw.survey,d.payload);
-      const parsed={loyalty:parseLoyalty,sleepers:parseSleepers,mapping:parseMapping,survey:parseSurvey,lms:parseLms,zumba:parseZumba,klikturun:parseKlikTurun}[d.type](d.payload);const n=(parsed.members||parsed.rows||[]).length;
+      const parsed={loyalty:parseLoyalty,sleepers:parseSleepers,mapping:parseMapping,survey:parseSurvey,lms:parseLms,zumba:parseZumba,klikturun:parseKlikTurun,svklik:parseSvk}[d.type](d.payload);const n=(parsed.members||parsed.rows||[]).length;
       if(!n){set(`${f.name}: terbaca sebagai ${DS_INFO[d.type].l} tapi tidak ada baris data.`,'alert red');continue}
       set(`${f.name}: ${DS_INFO[d.type].l}, ${n} baris. Menyimpan…`);await saveDataset(d.type,{...d.payload},f.name);set(`✓ ${f.name}: ${DS_INFO[d.type].l} diperbarui (${n} baris).`);
     }catch(err){if(err.imp)line.imp=err.imp;set(`${f.name}: ${err.code||err.message}`,'alert red')}}

@@ -75,7 +75,7 @@ document.addEventListener('click',async e=>{const el=e.target.closest('[data-act
   case'kecf':F('penurunan').kec=F('penurunan').kec===k?'':k;F('penurunan').page=0;rerender();break;
   case'proj':{const f=F('project');f.p=k;f.page=0;f.st='';f.pic='';f.q='';f.cat='';f.jenis='';f.lst='';f.sort=null;S.sel.clear();if(S.view!=='project')go('project');else rerender();break}
   case'pseg':{const f=F('project');f.seg=f.seg||{};f.seg[f.p||'loy']=k;f.page=0;rerender();break}
-  case'ppic':{const f=F('project');f.pic=f.pic===k?'':k;f.vis='';f.page=0;S.sel.clear();rerender();break}
+  case'ppic':{const f=F('project');f.pic=f.pic===k?'':k;f.vis=f.pic&&f.pic!==NO_PIC&&(f.p||'loy')!=='zb'?'n':'';f.page=0;S.sel.clear();rerender();break}
   case'pvis':{const f=F('project');f.vis=v||'';f.page=0;S.sel.clear();rerender();break}
   case'pzst':{const f=F('project');f.zst=f.zst===k?'':k;f.page=0;rerender();break}
   case'zb-queue':zbQueue();break;

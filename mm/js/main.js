@@ -233,6 +233,7 @@ function applyOverlays(){restoreBase();
   Object.keys(S.raw).filter(k=>k.startsWith('txd-')).sort().forEach(k=>{const t=S.raw[k];if(!t||!t.d)return;const key=t.d.slice(0,7),day=+t.d.slice(8);const [yy,mm]=key.split('-').map(Number);
     let cov=0;const bi=D.base.periods.indexOf(key);if(bi>=0)cov=D.base.pdays[bi];const h=S.raw['hist-'+key];if(h)cov=Math.max(cov,h.days||new Date(yy,mm,0).getDate());if(day<=cov)return;
     addPeriod(key);const p=D.periods.indexOf(key);
+    D.salesVer=(D.salesVer||0)+1;
     for(const r of t.rows){let m=D.byCode[U(r[0])];if(!m)m=addMember({code:r[0],name:r[5],sub:r[6]});const o=m.i*D.P+p;D.G[o]+=r[1];D.MG[o]+=r[2];D.STK[o]+=r[3];D.KJ[o]+=r[4];if(day>D.LD[o])D.LD[o]=day}
     const A=D.agg.monthly[p];A.gross+=sumBy(t.rows,r=>r[1]);A.margin+=sumBy(t.rows,r=>r[2]);A.receipts+=sumBy(t.rows,r=>r[3]);if(!A.net)A.net=0;A.net+=sumBy(t.rows,r=>r[1])*0.93;
     txMax[key]=Math.max(txMax[key]||cov,day);D.pdays[p]=txMax[key];A.days=D.pdays[p];

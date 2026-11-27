@@ -95,7 +95,7 @@ function loadMembers(J){
   }
 }
 function applyHistOverlay(p,rows){ // rows: [{code,gross,margin,struk,kunj,lastDay}]
-  const P=D.P;for(const m of D.mem){const o=m.i*P+p;D.G[o]=0;D.MG[o]=0;D.STK[o]=0;D.KJ[o]=0;D.LD[o]=0}
+  const P=D.P;D.salesVer=(D.salesVer||0)+1;for(const m of D.mem){const o=m.i*P+p;D.G[o]=0;D.MG[o]=0;D.STK[o]=0;D.KJ[o]=0;D.LD[o]=0}
   for(const r of rows){let m=D.byCode[U(r.code)];if(!m){m=addMember({code:r.code,name:r.name,sub:r.sub});}const o=m.i*P+p;D.G[o]=r.gross;D.MG[o]=r.margin;D.STK[o]=r.struk;D.KJ[o]=r.kunj;D.LD[o]=r.lastDay||0}
 }
 function addMember(x){ // grows typed arrays (rare)

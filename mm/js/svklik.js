@@ -46,8 +46,8 @@ function svkInfo(r){const m=r.m;return`<div><b>${esc(r.toko||'–')}</b></div><d
 function svkLoc(r){const c=coordOf(r);
   return c?`<div class="pill-row"><a class="btn sm pri" href="${svkRoute(c)}" target="_blank" rel="noopener" data-tip="Rute Google Maps dari lokasi Anda sekarang ke toko ini">🧭 Rute dari lokasi saya</a><a class="btn sm" href="${gmapsPt(c)}" target="_blank" rel="noopener" data-tip="Lihat titik toko">${IC.pin} Titik</a></div><div class="mut small clamp">${esc(svkAddr(r))}</div>`
    :r.addr?`<a class="btn sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(svkAddr(r))}" target="_blank" rel="noopener">${IC.pin} Cari alamat</a><div class="mut small">belum ada titik</div>`:'<span class="mut">Belum ada titik</span>'}
-function svkStats(rows){const n=rows.length||1;const mem=rows.filter(r=>r.m).length,p3=rows.filter(r=>!r.m&&r.svy).length,ft=rows.filter(r=>r.foto).length,vis=rows.filter(r=>visitOf(r)).length;
+function svkStats(rows){const n=rows.length||1;const mem=rows.filter(r=>r.m).length,p3=rows.filter(r=>!r.m&&r.svy).length,ft=rows.filter(r=>r.foto).length,vis=rows.filter(r=>visitOf(r)).length;const nb=rows.filter(r=>buyOf(r)).length;
   const kota=countBy(rows,r=>r.city||'-');const st=countBy(rows,statusOf);
   const k=kpiCard({l:'Toko disurvey (apps Klik)',v:fmtN(rows.length),note:Object.entries(kota).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${fmtN(v)} ${esc(k)}`).join(' · '),accent:'red'})
-   +kpiCard({l:'Sudah jadi member',v:fmtN(mem),note:`${pct(mem/n,0)} · ${fmtN(p3)} lagi ada di Project 3 · ${fmtN(vis)} sudah dikunjungi (RKM) · ${fmtN(ft)} punya foto`});
+   +kpiCard({l:'Sudah jadi member',v:fmtN(mem),note:`${pct(mem/n,0)} · ${fmtN(p3)} lagi ada di Project 3 · ${fmtN(vis)} sudah dikunjungi (RKM) · ${fmtN(ft)} punya foto · ${fmtN(nb)} sudah belanja`});
   return`<div class="grid g4 mt">${k}<div class="card span2"><div class="lbl">Progress follow-up · klik untuk filter</div>${hbars(FU_ST.filter(s=>st[s]).map(s=>({k:s,l:s,v:st[s],c:FU_COL[FU_CLS[s]],vl:`${st[s]} · ${pct(st[s]/n,0)}`})),{max:n,act:'pfu'})}</div></div>`}

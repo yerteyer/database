@@ -150,6 +150,29 @@ const picOf=e=>U(fuOf(e.id).pic||e.pic||(e.code&&lastRkm(e.code)?.pic)||'');
 const coordOf=e=>parseCoord(fuOf(e.id).coord)||e.coord||null;
 const phoneOf=e=>phone62(fuOf(e.id).phone)||e.phone||'';
 function statusOf(e){const f=fuOf(e.id);if(f.status)return f.status;if(e.src==='SLP'&&e.back)return'Berhasil';if(e.src==='LMS'&&e.eligible)return'Berhasil';if(e.src==='MAP'&&e.cat==='BERHASIL')return'Berhasil';return'Belum dihubungi'}
+/* ===== Sudah belanja · Project 2, 3, 5, 7 =====
+   Dicek dari data sales terbaru (upload sales per member maupun per struk → D.G / D.LD), jadi ikut berubah tiap ada update sales.
+   Toko dicocokkan ke member lewat: kode member → No HP sama → nama lengkap (pemilik + toko) persis → nama pemilik sama dengan
+   member BARU (daftar ≥ 7 hari sebelum tgl survey/daftar, atau kode baru dari file sales) dan hanya bila calonnya tepat satu.
+   Dihitung "sudah belanja" bila tanggal belanja terakhir ≥ acuan: P2 tgl survey · P3 tgl daftar · P5 3 Nov (awal promo) · P7 1 Okt. */
+const BUY_SRC={MAP:'Project 2',SVY:'Project 3',LMS:'Project 5',SVK:'Project 7'};
+let _bix=null;
+function buyIdx(){if(_bix&&_bix.n===D.mem.length)return _bix;const ph={},full={},own={};
+  for(const m of D.mem){const p=phone62(m.phone||m.phoneRaw);if(p)(ph[p]=ph[p]||[]).push(m);const f=nmKey(m.name);if(f.length>=5)(full[f]=full[f]||[]).push(m);const o=ownKey(m.name);if(o.length>=5)(own[o]=own[o]||[]).push(m)}
+  return _bix={n:D.mem.length,ph,full,own}}
+function buyRef(e){if(e.src==='LMS')return new Date(2026,10,LMS.start);if(e.src==='SVK')return new Date(2026,9,1); // P7: Excel survey tanpa tanggal → acuan 1 Okt
+  const d=e.src==='SVY'?e.daftar:e.src==='MAP'?e.ts:null;return d||new Date(2026,10,1)}
+function buyMem(e){if(e.m)return{m:e.m,how:e.code?'kode member':'No HP'};const c=U(e.code||'');if(c&&D.byCode[c])return{m:D.byCode[c],how:'kode member'};const x=buyIdx();
+  const one=l=>l&&l.length===1?l[0]:null;const ph=phoneOf(e);if(ph&&x.ph[ph]){const m=one(x.ph[ph])||x.ph[ph].slice().sort((a,b)=>(lastBuy(b)||0)-(lastBuy(a)||0))[0];return{m,how:'No HP'}}
+  if(/\(/.test(e.name||'')){const m=one(x.full[nmKey(e.name)]);if(m)return{m,how:'nama toko'}}
+  const ref=buyRef(e),lim=new Date(+ref-7*864e5);const shop=n=>{const t=/\(([^)]*)/.exec(String(n||''));return t?nameToks(t[1].replace(/\b(TK|TOKO|KD|KEDAI|WR|WARUNG|KIOS)\b\.?/gi,'')).filter(w=>w.length>=3):[]};const es=shop(e.name);
+  // nama pemilik sama saja belum cukup: No HP keduanya (bila ada) harus sama, dan nama toko (bila keduanya ada) harus punya kata yang sama
+  const nw=(x.own[ownKey(e.name)]||[]).filter(m=>(!m.master||(toDate(m.reg)&&toDate(m.reg)>=lim))&&!(ph&&phone62(m.phone)&&phone62(m.phone)!==ph)&&!(es.length&&shop(m.name).length&&!shop(m.name).some(w=>es.includes(w))));const m=one(nw);return m?{m,how:'nama pemilik (member baru)'}:null}
+function buyOf(e){if(!e||!BUY_SRC[e.src])return null;const k=D.G;if(e._buy&&e._buy.k===k&&e._buy.n===D.mem.length&&e._buy.s===D.salesVer)return e._buy.v;
+  let v=null;const b=buyMem(e);if(b&&b.m){const lb=lastBuy(b.m);if(lb&&lb>=buyRef(e)){const q=D.periods.length-1;v={m:b.m,code:b.m.code,date:lb,how:b.how,gross:D.G[b.m.i*D.P+q]||0,struk:D.STK[b.m.i*D.P+q]||0}}}
+  e._buy={k,n:D.mem.length,s:D.salesVer,v};return v}
+const buyTxt=v=>v?`Sudah belanja ${fmtDs(v.date)} · ${v.code}`:'';
+function buyTag(e){const v=buyOf(e);if(!v)return'';return`<div><span class="tag good" data-tip="Dari data sales terbaru: belanja terakhir ${esc(fmtD(v.date))} (${esc(periodLabel(D.periods.length-1,true))}: ${esc(fmtS(v.gross))} · ${v.struk} struk). Dicocokkan lewat ${esc(v.how)}: ${esc(v.code)} · ${esc(v.m.name)}">🛒 ${esc(buyTxt(v))}</span></div>`}
 function memEnt(m){return{id:m.id,src:'MEM',code:m.code,name:m.name,m,coord:m.coord,phone:m.phone,kel:title(m.vil),kec:title(m.dist),addr:m.addr,seg:m.seg,sub:m.sub}}
 function entOf(id){if(!id)return null;if(D.M.byId&&D.M.byId[id])return D.M.byId[id];if(id.startsWith('M-')){const m=D.mem.find(x=>x.id===id);return m?memEnt(m):null}return null}
 

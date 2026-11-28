@@ -198,6 +198,7 @@ async function handleFiles(files){const sync=()=>{const b=$('#upStatus');if(b)b.
         set(`${f.name}: sales per struk ${h.p}, ${fmtN(h.n)} baris → ${fmtN(h.rows.length)} member. Menyimpan…`);await saveDataset('hist-'+h.p,h,f.name);
         set(`✓ ${f.name}: sales per STRUK ${periodLabelKey(h.p)} s/d tgl ${h.days||'?'} · ${fmtN(sumBy(h.rows,r=>r[3]))} struk → ${fmtN(h.rows.length)} member${h.hasDate?'':' · tanpa kolom tanggal: tgl belanja terakhir diperkirakan dari data sebelumnya'}${h.hasCh?' · kanal Klik/Toko terbaca':' · ⚠ kolom kanal Klik/Toko tidak ditemukan'}.`);continue}
       if(d.type==='hist'){const h=parseHistAoa(d.aoa,f.name);
+        if(!h.p||!h.rows.length){set(`${f.name}: kolom kode member / nilai sales per member tidak terbaca (0 baris) — data sales tidak diubah.`,'alert red');continue}
         set(`${f.name}: sales per member ${h.p}, ${h.rows.length} member. Menyimpan…`);await saveDataset('hist-'+h.p,h,f.name);set(`✓ ${f.name}: sales per MEMBER (rekap) ${periodLabelKey(h.p)}${h.days?' s/d tgl '+h.days:''} diperbarui (${h.rows.length} member).`);continue}
       if(d.type==='prod'){const h=parseProdAoa(d.aoa,f.name);if(!h.p){set(`${f.name}: bulan tidak terbaca dari nama file.`,'alert red');continue}if(!h.hasMem){set(`${f.name}: kolom jumlah MEMBER tidak ditemukan.`,'alert red');continue}
         set(`${f.name}: produk ${h.p}, ${h.rows.length} item. Menyimpan…`);await saveDataset('prod-'+h.p,h,f.name);set(`✓ ${f.name}: produk ${periodLabelKey(h.p)} diperbarui (${h.rows.length} item).`);continue}
@@ -219,7 +220,8 @@ function addPeriod(key){if(D.periods.includes(key))return;const P=D.P,N=D.mem.le
   D.G=grow(D.G,Float64Array);D.MG=grow(D.MG,Float64Array);D.STK=grow(D.STK,Uint16Array);D.KJ=grow(D.KJ,Uint16Array);D.LD=grow(D.LD,Uint8Array);
   D.periods.push(key);const [y,m]=key.split('-').map(Number);D.pdays.push(new Date(y,m,0).getDate());D.P=P2;D.agg.monthly.push({p:key,days:D.pdays[P],gross:0,net:0,margin:0,members:0,receipts:0,visits:0,ch:{}})}
 function applyOverlays(){restoreBase();
-  Object.keys(S.raw).filter(k=>k.startsWith('hist-')).sort().forEach(k=>{const h=S.raw[k];if(!h||!h.p)return;addPeriod(h.p);const p=D.periods.indexOf(h.p);
+  // file sales yang terbaca 0 baris tidak boleh mengosongkan bulan itu → data sebelumnya tetap dipakai
+  Object.keys(S.raw).filter(k=>k.startsWith('hist-')).sort().forEach(k=>{const h=S.raw[k];if(!h||!h.p||!(h.rows&&h.rows.length))return;addPeriod(h.p);const p=D.periods.indexOf(h.p);
     const bi=D.base.periods.indexOf(h.p);const est=(r,o)=>{if(!(h.noDate||h.hasDate===false)||bi<0)return o;const m=D.byCode[U(r[0])];if(!m||m.i>=D.base.memLen)return o;const q=m.i*D.base.P+bi,bs=D.base.STK[q];
       // file per struk tanpa kolom tanggal: struk tidak bertambah dari data sebelumnya → tgl terakhir & kunjungan tetap; bertambah → belanja di sisa hari (perkiraan)
       return r[3]<=bs&&r[1]<=D.base.G[q]+1?{...o,lastDay:D.base.LD[q],kunj:D.base.KJ[q]}:{...o,kunj:D.base.KJ[q]+Math.max(1,r[3]-bs)}};

@@ -127,6 +127,7 @@ function vRingkasan(){const C=CALC,f=F('ringkasan');const ap=C.ap,ac=C.ac;
 }
 function sleeperValuable(n){const C=CALC;const arr=C.rows.filter(r=>r.st==='sleeper').map(r=>{const b=r.m.i*D.P;let q=-1;for(let k=C.p;k>=0;k--)if(D.G[b+k]>0){q=k;break}let s=0,c=0;for(let k=Math.max(0,q-5);k<=q;k++){s+=D.G[b+k];c++}return{r,avg:c?s/c:0}}).sort((a,b)=>b.avg-a.avg).slice(0,n);
   return`<div class="list">${arr.map(({r,avg})=>`<div class="li"><div style="flex:1">${memCell(r.m,`Terakhir ${fmtD(r.last)} · ${r.since} hari`)}</div><div class="num"><b>${fmtS(avg)}</b><div class="mut">rata-rata/bln</div></div>${actBtns(memEntOf(r.m),{detail:false})}</div>`).join('')}</div>`}
+function rkmAsOf(){const b=D.agg&&D.agg.rkmAsOf?iso(toDate(D.agg.rkmAsOf)):'';let m=b;for(const r of D.rkm||[])if(r.date&&r.date>m&&r.date<=iso(TODAY))m=r.date;return toDate(m||b)}
 function kendalaCount(list){const m={};list.forEach(r=>String(r.issues||'').split(/,\s*(?=\d)/).forEach(x=>{const k=x.replace(/^\s*\d+\s*\.\s*/,'').trim();if(k)m[k]=(m[k]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 function topProdHtml(n){const P=D.prod[D.periods[CALC.p]];if(!P)return'<div class="empty">Memuat data produk…</div>';
   const arr=[...P].sort((a,b)=>b[5]-a[5]).slice(0,n);const mx=arr[0]?arr[0][5]:1;

@@ -6,7 +6,7 @@ function lineChart({labels,series,h=240,fmt=v=>fmtS(v),act,hi=[],w=820,area=true
   const mx=niceMax(Math.max(1,...series.flatMap(s=>s.values.filter(v=>v!=null))));
   const x=i=>pad.l+(n<=1?iw/2:i*iw/(n-1)),y=v=>pad.t+ih-(v/mx)*ih;
   let g='';for(let k=0;k<=4;k++){const v=mx*k/4;g+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l-8}" y="${y(v)+4}" class="ax" text-anchor="end">${esc(fmt(v,true))}</text>`}
-  const step=Math.ceil(n/8);let xl='';labels.forEach((l,i)=>{if(i%step===0||i===n-1)xl+=`<text x="${x(i)}" y="${H-8}" class="ax" text-anchor="middle">${esc(l)}</text>`});
+  const step=Math.ceil(n/8);let xl='';labels.forEach((l,i)=>{if(i===n-1||i%step===0&&n-1-i>=Math.max(2,step*.6))xl+=`<text x="${x(i)}" y="${H-8}" class="ax" text-anchor="middle">${esc(l)}</text>`});
   let hl='';hi.forEach(([i,cls])=>{if(i!=null&&i>=0)hl+=`<line x1="${x(i)}" x2="${x(i)}" y1="${pad.t}" y2="${pad.t+ih}" class="${cls}"/>`});
   let paths='';series.forEach((s,si)=>{const pts=s.values.map((v,i)=>v==null?null:[x(i),y(v)]);const d=pts.filter(Boolean).map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('');
     if(area&&si===0&&pts.filter(Boolean).length>1){const f=pts.filter(Boolean);paths+=`<path d="${d}L${f[f.length-1][0]},${pad.t+ih}L${f[0][0]},${pad.t+ih}Z" fill="${s.color}" opacity=".08"/>`}

@@ -122,7 +122,7 @@ function rkmBrief(r){if(!r)return'';if(r.sum)return r.sum;
   return String(r.issues||'').split(',').map(x=>x.replace(/^\s*\d+\.\s*/,'').trim()).filter(Boolean).join(', ')}
 /* toko kecil di Project Klik: hanya kunjungan tim Klik + SPV Klik yang dihitung */
 /* Jenis RKM yang sesuai tiap project: kunjungan dengan jenis ini diutamakan; bila tidak ada, kunjungan jenis lain tetap dihitung */
-const RKM_PREF={SVK:/AKTIVASI/,LOY:/LOYALTY|REGULER/,SVY:/AKTIVASI/,MAP:/AKTIVASI/,LMS:/TIDUR/,SLP:/BELUM BELANJA|TIDUR/,KTR:/TURUN|BELUM BELANJA|REGULER/};
+const RKM_PREF={SVK:/AKTIVASI/,LOY:/LOYALTY|REGULER/,SVY:/AKTIVASI/,MAP:/AKTIVASI/,LMS:/TIDUR/,SLP:/PROJECT KLIK|BELUM BELANJA|TIDUR/,KTR:/PROJECT KLIK|TURUN|BELUM BELANJA|REGULER/};
 function visitOf(e){const x=visitIdx();const c=U(e.code);const vis=e.klik?D.M.klikVis:null;const pref=RKM_PREF[e.src]||null;
   const pick=l=>{if(!l)return null;let any=null;for(let i=l.length-1;i>=0;i--){const r=l[i];if(vis&&!vis.has(U(r.pic)))continue;if(!pref||pref.test(U(r.type)))return r;if(!any)any=r}return any};
   if(c&&x.byCode[c])return pick(x.byCode[c]);

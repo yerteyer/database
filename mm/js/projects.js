@@ -173,6 +173,20 @@ function buyOf(e){if(!e||!BUY_SRC[e.src])return null;const k=D.G;if(e._buy&&e._b
   e._buy={k,n:D.mem.length,s:D.salesVer,v};return v}
 const buyTxt=v=>v?`Sudah belanja ${fmtDs(v.date)} · ${v.code}`:'';
 function buyTag(e){const v=buyOf(e);if(!v)return'';return`<div><span class="tag good" data-tip="Dari data sales terbaru: belanja terakhir ${esc(fmtD(v.date))} (${esc(periodLabel(D.periods.length-1,true))}: ${esc(fmtS(v.gross))} · ${v.struk} struk). Dicocokkan lewat ${esc(v.how)}: ${esc(v.code)} · ${esc(v.m.name)}">🛒 ${esc(buyTxt(v))}</span></div>`}
+/* Project 7 hanya berisi toko yang (permintaan pengguna 28 Nov):
+   · BELUM jadi member — kode member ada di CMS, atau No HP / nama toko cocok dengan member di data dashboard
+   · sudah ada surveyornya
+   · tidak dobel — No HP sama, atau nama pemilik + nama toko sama → survey terbaru yang disimpan
+   · dalam radius 15 km dari Indogrosir Pekanbaru (titik kosong / tidak masuk akal ikut dikeluarkan) */
+const IGR_PKU={lat:0.4517210418422283,lng:101.41764256864913},SVK_KM=15;
+function kmFrom(a,b){const R=6371,t=x=>x*Math.PI/180;const dl=t(b.lat-a.lat),dg=t(b.lng-a.lng);const h=Math.sin(dl/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dg/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function svkClean(o){const all=o.rows;const memOf=e=>e.code||(e.m&&e.m.code)||((typeof buyMem==='function'&&buyMem(e))||{}).m?.code||'';
+  const mem=[],nosv=[],far=[],dup=[];let rest=[];
+  all.forEach(e=>{const c=memOf(e);const co=e.coord;e.km=co?kmFrom(IGR_PKU,co):null;
+    if(c){e.memCode=c;mem.push(e)}else if(!e.sv)nosv.push(e);else if(e.km==null||e.km>SVK_KM)far.push(e);else rest.push(e)});
+  rest.sort((a,b)=>(+b.noSurvey||0)-(+a.noSurvey||0));const seen=new Set();
+  rest=rest.filter(e=>{const ks=[e.phone&&'p:'+e.phone,e.owner&&e.toko&&'n:'+nmKey(e.owner)+'|'+nmKey(e.toko)].filter(Boolean);if(ks.some(x=>seen.has(x))){dup.push(e);return false}ks.forEach(x=>seen.add(x));return true});
+  o.rows=rest;o.drop={mem,nosv,far,dup,total:all.length}}
 function memEnt(m){return{id:m.id,src:'MEM',code:m.code,name:m.name,m,coord:m.coord,phone:m.phone,kel:title(m.vil),kec:title(m.dist),addr:m.addr,seg:m.seg,sub:m.sub}}
 function entOf(id){if(!id)return null;if(D.M.byId&&D.M.byId[id])return D.M.byId[id];if(id.startsWith('M-')){const m=D.mem.find(x=>x.id===id);return m?memEnt(m):null}return null}
 
@@ -185,7 +199,7 @@ function buildProjects(){
   D.M.loy.members.forEach(e=>tag(e.id,'Loyalty Targetan'));D.M.slp.rows.forEach(e=>tag(e.id,'Klik · sleeper'));D.M.map.rows.forEach(e=>tag(e.id,e.cat==='KLIK'?'Klik · mapping kecil':'Mapping'));D.M.svy.rows.filter(e=>e.pending).forEach(e=>tag(e.id,'ACC belum aktivasi'));D.M.lms.rows.forEach(e=>tag(e.id,'Loyalty MM Sleepers'));
   D.M.zb=parseZumba(raw.zumba);D.M.zb.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Undangan Zumba')});
   D.M.ktr=parseKlikTurun(raw.klikturun);D.M.ktr.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Klik · turun Sep→Okt')});
-  D.M.svk=parseSvk(raw.svklik);svkLink(D.M.svk.rows);D.M.svk.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Survey apps Klik')});
+  D.M.svk=parseSvk(raw.svklik);svkLink(D.M.svk.rows);svkClean(D.M.svk);D.M.svk.rows.forEach(e=>{D.M.byId[e.id]=e;tag(e.id,'Survey apps Klik')});
   D.M.kecil=buildKecil();D.M.kecil.forEach(e=>tag(e.id,'Klik · toko kecil'));
   const pics=new Set();D.rkm.forEach(r=>r.pic&&pics.add(U(r.pic)));Object.values(D.M.byId).forEach(e=>e.pic&&pics.add(e.pic));Object.values(S.fu).forEach(f=>f&&f.pic&&pics.add(U(f.pic)));D.M.pics=[...pics].filter(Boolean).sort();
 }
